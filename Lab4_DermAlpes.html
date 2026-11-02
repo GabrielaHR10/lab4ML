@@ -7962,7 +7962,7 @@ Versión de Numpy: 1.26.4
 <p>Como DermAlpes no tiene imágenes etiquetadas de sus pacientes, se evalúa un enfoque <strong>no supervisado</strong>: representar cada píxel por su color y su posición, agruparlos con K-medias y después decidir, con un criterio automático, qué grupos corresponden a la lesión. Las máscaras de referencia elaboradas por dermatólogos <strong>no</strong> se usan para agrupar, solo para medir qué tan bien funciona el método.</p>
 <p>Para estimar el desempeño de forma honesta seguimos un protocolo de ajuste y prueba: las 15 imágenes de ajuste se usan para elegir β, λ y el criterio de construcción de la máscara (K se elige en cada imagen con el coeficiente de silueta), y las 5 imágenes de prueba solo se consultan al final, para calcular las métricas.</p>
 <p><strong>¿Qué sería un buen resultado?</strong> Una máscara cuyo contorno coincida con el de la referencia, porque el especialista la usaría para medir tamaño y forma (Dice alto). No esperamos acertar en todas las imágenes, pero sí entender en cuáles falla el método y por qué, para saber cuándo no confiar en él.</p>
-<p><strong>¿Qué error sería más costoso?</strong> Consideramos más grave el <strong>falso negativo</strong> (zonas de la lesión que quedan por fuera de la máscara): subestima el tamaño, deforma el contorno y puede hacer que el especialista no mire una parte relevante, por ejemplo una zona clara o rosada en el borde de la lesión. Un <strong>falso positivo</strong> (piel marcada como lesión) sobreestima el tamaño, pero el dermatólogo lo detecta con más facilidad porque ve la imagen completa.</p>
+<p><strong>¿Qué error sería más costoso en terminos del problema en genral?</strong> Consideramos más grave el <strong>falso negativo</strong> (zonas de la lesión que quedan por fuera de la máscara): subestima el tamaño, deforma el contorno y puede hacer que el especialista no mire una parte relevante, por ejemplo una zona clara o rosada en el borde de la lesión. Un <strong>falso positivo</strong> (piel marcada como lesión) sobreestima el tamaño, pero el dermatólogo lo detecta con más facilidad porque ve la imagen completa.</p>
 </div>
 </div>
 </div>
@@ -8539,7 +8539,7 @@ if (outputEl) {{
 <ol>
 <li><strong><code>pixeles</code></strong>: un <code>FunctionTransformer</code> (como <code>dropper</code> en las prácticas de regresión) con la función <code>imagen_a_pixeles</code>. Esta función reutiliza el código de la práctica de segmentación: <code>np.meshgrid</code> para obtener las coordenadas de cada píxel y <code>np.hstack</code> para unirlas al color. La única diferencia es el orden de las coordenadas: P13 apilaba (i, j) = (fila, columna) y el enunciado pide (x, y) = (columna, fila).</li>
 <li><strong><code>scaler</code></strong>: <code>MinMaxScaler</code>, como en la práctica de K-medias, que lleva cada columna al intervalo $[0, 1]$. En las coordenadas da exactamente $x = j / (W - 1)$ y $y = i / (H - 1)$. En el color lleva el mínimo y el máximo de cada canal <strong>de cada imagen</strong> a 0 y 1, porque el escalador se ajusta con cada imagen. Lo preferimos a dividir por 255 porque es la herramienta usada en el curso y normaliza color y posición con el mismo criterio. Su desventaja es que estira cada canal por separado, así que la escala del color no es idéntica entre imágenes.</li>
-<li><strong><code>pesos</code></strong>: otro <code>FunctionTransformer</code>, con la función <code>ponderar</code>, que multiplica las columnas de color por β y las de posición por λ. Es la misma idea que <code>idx_list*weight</code> en la práctica de segmentación, pero con un peso también para el color. β y λ se pasan en <code>kw_args</code>, así que se cambian con <code>pipe.set_params(pesos__kw_args={'beta': ..., 'lam': ...})</code> <strong>sin modificar la implementación</strong>, igual que <code>model__n_clusters</code> en la práctica de K-medias.</li>
+<li><strong><code>pesos</code></strong>: otro <code>FunctionTransformer</code>, con la función <code>ponderar</code>, que multiplica las columnas de color por β y las de posición por λ. Es la misma idea que <code>idx_list*weight</code> en la práctica de segmentación, pero con un peso también para el color. β y λ se pasan en <code>kw_args</code>, así que se cambian con <code>pipe.set_params(pesos__kw_args={'beta': , 'lam': })</code> <strong>sin modificar la implementación</strong>, igual que <code>model__n_clusters</code> en la práctica de K-medias.</li>
 <li><strong><code>model</code></strong>: <code>KMeans(max_iter=300, random_state=SEMILLA)</code>, como en la práctica de K-medias. K se cambia con <code>pipe.set_params(model__n_clusters=k)</code>.</li>
 </ol>
 <p><strong>Diferencia con la práctica de segmentación:</strong> allí el color iba de 0 a 255 y las coordenadas de 0 a cientos de píxeles, por lo que el <code>weight = 0.17</code> también servía para compensar escalas distintas. Al normalizar ambos a $[0, 1]$, β y λ expresan directamente la importancia relativa del color y de la posición, y lo único que cambia los grupos es la razón λ/β.</p>
@@ -9466,7 +9466,7 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 <p>Como en la práctica de K-medias, la silueta se calcula sobre los datos ya transformados (<code>pipe[:-1].transform(img)</code>), es decir, en el mismo espacio [β·R, β·G, β·B, λ·x, λ·y] en el que agrupa K-medias.</p>
 <p><strong>Valores usados:</strong></p>
 <ul>
-<li><strong>Tamaño de la muestra: 5.000 píxeles</strong> (≈10 % de los 49.152 píxeles de una imagen).</li>
+<li><strong>Tamaño de la muestra: 5.000 píxeles</strong> (aproximadamente 10 % de los 49.152 píxeles de una imagen).</li>
 <li><strong>Semilla: 0</strong> (<code>SEMILLA</code>), la misma para K-medias (<code>random_state</code>) y para la muestra de la silueta.</li>
 </ul>
 <p>La celda después de la función justifica el tamaño de la muestra.</p>
@@ -9706,8 +9706,8 @@ Muestra de 10000 píxeles: 1.090 s por cálculo de silueta
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>El K elegido no cambia con el tamaño de la muestra ni con la semilla en ninguno de los casos, así que una muestra de 1.000 píxeles ya sería suficiente para estas imágenes. Escogimos <strong>5.000</strong> porque sigue siendo barata (la silueta se calcula 15 × 10 × 7 = 1.050 veces en el ajuste) y da más margen de estabilidad que una muestra pequeña. Una muestra de 10.000 píxeles cuesta unas cuatro veces más sin cambiar ninguna decisión.</p>
-<p>Antes de correr todo, miramos la inercia (método del codo) y la silueta en una sola imagen, como en la práctica de K-medias, comparando solo color, una combinación intermedia y una con más peso en la posición.</p>
+<p>El K elegido no cambia con el tamaño de la muestra ni con la semilla en ninguno de los casos, así que una muestra de 1.000 píxeles ya sería suficiente para estas imágenes. Escogimos <strong>5.000</strong> porque sigue siendo barata (la silueta se calcula 15 × 10 × 7 = 1.050 veces en el ajuste) y da más margen de estabilidad que una muestra pequeña. Una muestra de 10.000 píxeles cuesta unas cuatro veces más sin cambiar ninguna decisión. Aqui cabe aclarar que el costo lo definimos escenialmente por tiempo.</p>
+<p>Antes de correr todo, miramos la inercia (método del codo) y la silueta en una sola imagen, como hicimos en la practica y aqui comparando solo color, una combinación intermedia y una con más peso en la posición de esta amnera vemos de manera visual una comparacion clara y precisa y sabemos que hacer.</p>
 </div>
 </div>
 </div>
@@ -10443,11 +10443,11 @@ Muestra de 10000 píxeles: 1.090 s por cálculo de silueta
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p><strong>Análisis de la selección de K:</strong></p>
 <ul>
-<li><strong>Con poco peso en la posición se elige siempre K = 2.</strong> En C0 (solo color), C2 (λ/β = 0.1) y C3 (λ/β = 0.25) la silueta elige K = 2 en las 15 imágenes. Con solo color, la estructura más marcada de los píxeles es la separación entre dos tonos, uno oscuro y uno claro. Esto coincide con lo que vimos en <code>plot_data</code> para 089, donde lesión y piel forman dos nubes casi separadas. Que esos dos grupos correspondan a lesión y piel se evalúa con Dice en la sección 8, no con la silueta: en 112, por ejemplo, el grupo oscuro podría quedarse con las esquinas.</li>
+<li><strong>Con poco peso en la posición se elige siempre K = 2.</strong> Dado lo anterior vimos uqe en C0 (solo color), C2 (λ/β = 0.1) y C3 (λ/β = 0.25) la silueta elige K = 2 en las 15 imágenes. Con solo color, la estructura más marcada de los píxeles es la separación entre dos tonos, uno oscuro y uno claro. Esto coincide con lo que vimos en <code>plot_data</code> para 089, donde lesión y piel forman dos nubes casi separadas. Que esos dos grupos correspondan a lesión y piel se evalúa con Dice en la sección 8, no con la silueta: en 112, por ejemplo, el grupo oscuro podría quedarse con las esquinas lo que represnetaba un problema para nosotros.</li>
 <li><strong>La silueta es mayor en las imágenes con más contraste.</strong> Con solo color va de 0.857 en 089, la lesión más contrastada, a 0.583 en 094, una lesión clara y poco contrastada. Las imágenes de bajo contraste (094, 112, 114, 153) son también las de menor silueta.</li>
 <li><strong>Al aumentar λ/β el K elegido cambia y la silueta baja.</strong> La transición ocurre entre λ/β = 0.5 y 1. En C4 ya cambian 094 (K = 5) y 114 (K = 4), en C5 cambian 6 de las 15 imágenes y en C6 casi todas pasan a K entre 5 y 8. Desde λ/β = 1.5 (C7 a C9) el K es 4 a 6 en todas las imágenes, casi siempre 5, y la silueta se estabiliza cerca de 0.40 a 0.47. En la gráfica de ISIC_0000085 se ve el mismo patrón: con C0 y C4 la silueta es máxima en K = 2, y con C8 en K = 5.</li>
-<li><strong>Con solo posición (C1) el resultado no depende de la imagen.</strong> Se elige K = 4 en las 15 imágenes con la misma silueta, 0.405. La excepción es ISIC_0000157, con 0.412, porque es la única con otra proporción (167 × 256). Sin color, los píxeles forman una rejilla regular y uniforme, idéntica en todas las imágenes del mismo tamaño, así que K-medias solo la parte en bloques (cuadrantes) y la silueta mide la geometría de la rejilla, no el contenido de la imagen.</li>
-<li><strong>Implicación.</strong> La silueta siempre favorece las combinaciones con poco peso en la posición. La posición agrega dimensiones distribuidas de manera uniforme, sin grupos naturales, que reducen la separación entre grupos. Por eso la silueta sirve para elegir K <strong>dentro</strong> de una combinación, pero no para comparar combinaciones. Las combinaciones de β y λ se comparan en la sección 8 con el Dice, como pide el enunciado.</li>
+<li><strong>Con solo posición (C1) el resultado no depende de la imagen.</strong> aqui se elige K = 4 en las 15 imágenes con la misma silueta, 0.405. La excepción es ISIC_0000157 porque es la única con otra proporción de imagen. Sin color, los píxeles forman una rejilla regular y uniforme, idéntica en todas las imágenes del mismo tamaño, así que K-medias solo la parte en bloques y la silueta mide la geometría de la rejilla, no el contenido como tal que hay en la imagen.</li>
+<li><strong>Implicación.</strong> Aqui podemos ver como la silueta siempre favorece las combinaciones con poco peso en la posición. La posición agrega dimensiones distribuidas de manera uniforme, sin grupos naturales, que reducen la separación entre grupos. Por eso la silueta sirve para elegir K <strong>dentro</strong> de una combinación, pero no para comparar combinaciones.</li>
 </ul>
 </div>
 </div>
@@ -13775,6 +13775,55 @@ V-measure promedio en ajuste: 0.347
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h3 id="10.5-En-el-contexto-de-DermAlpes,-%C2%BFqu%C3%A9-consecuencias-podr%C3%ADan-tener-los-falsos-positivos-y-falsos-negativos?-%C2%BFQu%C3%A9-sesgos-y-problemas-de-generalizaci%C3%B3n-deben-considerarse-antes-de-utilizar-el-m%C3%A9todo-con-nuevas-poblaciones-o-condiciones-de-adquisici%C3%B3n?">10.5 En el contexto de DermAlpes, ¿qué consecuencias podrían tener los falsos positivos y falsos negativos? ¿Qué sesgos y problemas de generalización deben considerarse antes de utilizar el método con nuevas poblaciones o condiciones de adquisición?<a class="anchor-link" href="#10.5-En-el-contexto-de-DermAlpes,-%C2%BFqu%C3%A9-consecuencias-podr%C3%ADan-tener-los-falsos-positivos-y-falsos-negativos?-%C2%BFQu%C3%A9-sesgos-y-problemas-de-generalizaci%C3%B3n-deben-considerarse-antes-de-utilizar-el-m%C3%A9todo-con-nuevas-poblaciones-o-condiciones-de-adquisici%C3%B3n?">¶</a></h3><p>Un falso positivo (marcar piel como lesión) hace que la lesión parezca más grande de lo que es, y el especialista podría medir mal su tamaño o pensar que creció. Un falso negativo (dejar parte de la lesión por fuera) la hace ver más pequeña y con un borde más parejo de lo que es. Esto es lo que más le pasa a nuestro método, y un poco grave y no lo ideal, porque el borde es justo una de las cosas que revisa el dermatólogo y, si solo mira lo que marcó la máscara, se le puede pasar algo importante. Además, todas las fotos que usamos son de piel blanca. En pieles más oscuras el contraste entre la lesión y la piel puede cambiar, y nuetsro método por color que marca lo más oscuro podría estar sesgado sobre estas pieles y marcar más de la cuenta. Además, como el método se armó con solo 20 fotos, no podemos saber realmente como sería su desempeño con fotos reales. Por esto  creemos que la máscara debería ser solo una ayuda que el especialista revisa, y antes de usarla con otros pacientes o en otros centros habría que probarla con fotos de esas condiciones.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e58f3453">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="-11.-Uso-de-herramientas-de-IA-generativa"><a name="11"></a> 11. Uso de herramientas de IA generativa<a class="anchor-link" href="#-11.-Uso-de-herramientas-de-IA-generativa">¶</a></h2><h3 id="11.1-Declaraci%C3%B3n-del-uso">11.1 Declaración del uso<a class="anchor-link" href="#11.1-Declaraci%C3%B3n-del-uso">¶</a></h3><p>Se hizo uso de la IAG principalmente para mejorar la redacción del notebook, escribir fragmentos de código repetitivos, aclarar dudas acerca del laboratorio y la práctica de segmentación de imágenes (que además no era tan larga y completa como otras prácticas) y para la realización tanto del prompt de la sección de verificación con IA, como para la sugerencia de qué parámetros y decisiones implementar dentro del proceso de segmentación.</p>
+<p>Se usó principalmente Claude Opus 5.5 y un poco de chat gpt.</p>
+<h3 id="11.2-Prompts-utilizados">11.2 Prompts utilizados<a class="anchor-link" href="#11.2-Prompts-utilizados">¶</a></h3><p>"hola bro porfa ayúdame haciendo la platilla de este laboratorio con base a lo que te mandé antes que había que hacer, hazlo en un notebook .ipynb Y NO HAGAS TODO, si quieres deja recomendaciones en el enunciado y luego nosotros las realizamos."</p>
+<p>"Para el punto de la verificación con IAG necesito que me ayudes haciendo el prompt que el voy a mandar a la IA (no a ti), incluye todo el contexto."</p>
+<h3 id="11.3-Actividad-de-verificaci%C3%B3n-(obligatoria)">11.3 Actividad de verificación (obligatoria)<a class="anchor-link" href="#11.3-Actividad-de-verificaci%C3%B3n-(obligatoria)">¶</a></h3><p><strong>Prompt enviado a ChatGPT y realizado con Claude</strong> (sin imágenes y sin mencionar ISIC; describiendo las imágenes):</p>
+<blockquote>
+<p>Hola. Estoy haciendo un laboratorio de aprendizaje no supervisado y necesito una recomendación concreta de parámetros.</p>
+<p>La tarea: segmentar lesiones de piel en fotos tomadas con dermatoscopio usando K-medias, para obtener una máscara binaria (lesión / no lesión). No es para diagnosticar, solo para delimitar la lesión.</p>
+<p>Cómo son las fotos:</p>
+<ul>
+<li>Son fotos de cerca de un lunar o mancha sobre piel clara (tonos rosados o beige).</li>
+<li>La lesión es café, de café claro a casi negro, y casi siempre está más o menos centrada. Ocupa entre el 3 % y el 40 % de la foto, en promedio un 20 %.</li>
+<li>En algunas fotos la lesión contrasta mucho con la piel; en otras es clara y se confunde con ella. Algunas lesiones tienen zonas más claras por dentro.</li>
+<li>Algunas fotos tienen esquinas negras por la forma redonda del lente del dermatoscopio.</li>
+<li>Algunas tienen pelos, burbujas o una regla de medición en el borde. También puede haber pecas o manchas pequeñas en la piel alrededor.</li>
+<li>Las reduje a 256 píxeles de ancho (unos 49.000 píxeles por foto).</li>
+</ul>
+<p>Cómo represento cada píxel: [β·R, β·G, β·B, λ·x, λ·y], donde R, G, B son el color y x, y la posición del píxel. Color y posición están normalizados entre 0 y 1 antes de multiplicarlos por β y λ. β es el peso del color y λ el peso de la posición.</p>
+<p>Lo que necesito que me recomiendes:</p>
+<ol>
+<li>Valores concretos de β y λ.</li>
+<li>Un valor de K, o si es mejor escogerlo en cada foto con algún método (por ejemplo, el coeficiente de silueta probando K entre 2 y 8).</li>
+<li>Un criterio automático para decidir cuáles grupos de K-medias son la lesión y armar la máscara. Solo puede usar información de los grupos (color, tamaño, ubicación, etc.), porque en fotos nuevas no tengo la máscara correcta.</li>
+</ol>
+<p>Dame números concretos y explícame brevemente por qué los escogiste.</p>
+</blockquote>
+<p><strong>Respuesta y conversación completa:</strong> <a href="https://chatgpt.com/share/6ae87b29-58f4-83e9-8c36-77e252e1dd43">https://chatgpt.com/share/6ae87b29-58f4-83e9-8c36-77e252e1dd43</a></p>
+<p><strong>Recomendación obtenida:</strong> β = 1, λ = 0.5, K = 5 fijo, criterio = puntaje por grupo S = 0.55·oscuridad frente a la piel + 0.30·cercanía al centro + 0.15·tamaño creíble, quitando los píxeles negros del borde, con un máximo del 40 % de la foto y una limpieza final.</p>
+<p><strong>Resultado en las imágenes de ajuste:</strong> Dice promedio = 0.891 (ver sección 8.2), contra 0.865 de nuestra configuración final.</p>
+<ul>
+<li><strong>¿La recomendación funcionó en sus imágenes?</strong> Sí, y mejor que nuestra configuración en las imágenes de ajuste. No la adoptamos porque su ventaja depende de fijar K = 5, mientras que nuestro método escoge K con la silueta en cada foto (sección 8.7).</li>
+<li><strong>¿En qué acertó y en qué falló?</strong> Acertó en usar la ubicación de los grupos: con K = 5 la lesión queda partida en un centro oscuro y un anillo más claro, y su puntaje recupera el anillo porque está en el centro. También acertó en prevenir el problema de las esquinas negras. Falló en que el criterio no venía completo: no dijo desde qué puntaje un grupo es lesión, cómo calcular el puntaje de tamaño ni qué tan fuerte hacer la limpieza, así que lo completamos nosotros. Y en 112 y 114 (lesión clara o muy pequeña, con esquinas negras) le va igual de mal que a nosotros.</li>
+<li><strong>¿Por qué la IAG no podía anticipar el comportamiento del método en sus imágenes?</strong> Nunca vio las fotos, solo nuestra descripción. No podía saber cómo iba a agrupar K-medias estas fotos, en general, no le permitimos hacer data snooping.</li>
+</ul>
+<h3 id="11.4-An%C3%A1lisis-cr%C3%ADtico-del-resultado">11.4 Análisis crítico del resultado<a class="anchor-link" href="#11.4-An%C3%A1lisis-cr%C3%ADtico-del-resultado">¶</a></h3><p>¿qué partes del contenido generado fueron correctas y útiles?</p>
+<p>La IAG (claude) fue súper útil para hacer un prompt completo y claro para pasarselo a otra IAG (chat gpt) en la etapa de verificación con IAG. Este reunió todo el contexto necesario del problema y no adjuntó datos extra como el origen de las fotos ni las fotos en sí mismas.</p>
+<p>¿qué errores, imprecisiones o limitaciones se identificaron?</p>
+<p>La IA dentro de las sugerencias de código iniciales que realizó junto con la creación de la plantilla, no hacía pipelines, lo cual se nos enseñó en clase era una terrible práctica y dificulta la comparación de modelos y recopilación de resultados. Esto lo vimos y no lo aplicamos, hicimos nuestro pipeline, y nos apoyamos de algunas de las ideas propuestas en el código sugerido inicialmente, más con nuestra propia estructura.</p>
+<h3 id="11.5-Aportes-propios-de-los-estudiantes">11.5 Aportes propios de los estudiantes<a class="anchor-link" href="#11.5-Aportes-propios-de-los-estudiantes">¶</a></h3><p>Varias decisiones se tomaron con base a lo mostrado en la práctica de segmentación de imágenes. Nosotros decidimos qué modelos utilizar con base a los resultados obtenidos, esto es particularmente importante sobre todo en la parte del modelo sugerido por la IAG, dado que el sugerido tuvo un mejor desempeño que el realizado pero aún así decidimos emplear el realizado por nosotros debido a que se realizó con los pasos pedidos por la guia y con base a las métricas de cada una de las imágenes.</p>
 </div>
 </div>
 </div>
